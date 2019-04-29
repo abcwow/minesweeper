@@ -12,7 +12,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"./Sweeper"
 )
@@ -27,12 +26,10 @@ func aRobotgo() {
 		//g.UpdateGridState()
 		state, err := g.UpdateGridState()
 		if err != nil {
-			fmt.Println(err)
-			//fmt.Println("press any key to start another game:")
-			//var str string
-			//fmt.Scanln(&str)
-			time.Sleep(1e9)
-			continue
+			fmt.Printf("%s, press any key to start another game:\n", err.Error())
+			var str string
+			fmt.Scanln(&str)
+			g.StartNewGame()
 		}
 		//
 		control := sweeper.GetSweeper(state[:480])
