@@ -10,10 +10,7 @@
 
 package main
 
-import (
-	"time"
-	//"github.com/go-vgo/robotgo"
-)
+//"github.com/go-vgo/robotgo"
 
 func aRobotgo() {
 
@@ -27,8 +24,10 @@ func aRobotgo() {
 
 		//mouse
 		//ox, oy := g.OrgPos()
+		// grid := *[30][16]byte
+		//MoveAndClick(ox, oy, grid)
 
-		time.Sleep(3e9)
+		//time.Sleep(3e9)
 
 	}
 
