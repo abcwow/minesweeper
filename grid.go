@@ -149,12 +149,14 @@ func (g *Grid) ForUseData(val byte) byte {
 		return 0
 	} else if val == 15 {
 		return 0x0A
+	} else if val == 3 {
+		return 50
 	}
 
 	return 0
 }
 
-func (g *Grid) UpdateGridState() (info [CELL_N]byte) {
+func (g *Grid) UpdateGridState() (info [CELL_N]byte, err error) {
 
 	fmt.Println("===================================================================")
 
@@ -163,12 +165,16 @@ func (g *Grid) UpdateGridState() (info [CELL_N]byte) {
 	for i := 0; i < GRID_H; i++ {
 		szText := fmt.Sprintf("row%2d: ", i)
 		for j := 0; j < GRID_W; j++ {
-			info[i*GRID_W+j] = g.ForUseData(g.GetCellState(i, j))
+			data := g.ForUseData(g.GetCellState(i, j))
+			if data == 50 {
+				return info, fmt.Errorf("game over")
+			}
+			info[i*GRID_W+j] = data
 			szText += fmt.Sprintf("%2d", info[i*GRID_W+j])
 		}
 		fmt.Println(szText)
 	}
 
-	return
+	return info, nil
 
 }
