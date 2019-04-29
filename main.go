@@ -10,6 +10,12 @@
 
 package main
 
+import (
+	"fmt"
+
+	"./Sweeper"
+)
+
 //"github.com/go-vgo/robotgo"
 
 func aRobotgo() {
@@ -17,10 +23,19 @@ func aRobotgo() {
 	g := NewGrid()
 
 	for {
-		g.UpdateGridState()
-		//state := g.UpdateGridState()
-
+		//g.UpdateGridState()
+		state := g.UpdateGridState()
 		//
+		control := sweeper.GetSweeper(state[:480])
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+		fmt.Println("len of control is: ", len(control))
+		for i := 0; i < 16; i++ {
+			szText := fmt.Sprintf("row%2d: ", i)
+			for j := 0; j < 30; j++ {
+				szText += fmt.Sprintf("%2d", control[i*30+j])
+			}
+			fmt.Println(szText)
+		}
 
 		//mouse
 		//ox, oy := g.OrgPos()
