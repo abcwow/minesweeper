@@ -26,6 +26,7 @@ func aRobotgo() {
 		//g.UpdateGridState()
 		state, err := g.UpdateGridState()
 		if err != nil {
+			fmt.Println("----------------------------------------------------------------------")
 			fmt.Printf("%s, press any key to start another game:\n", err.Error())
 			var str string
 			fmt.Scanln(&str)
