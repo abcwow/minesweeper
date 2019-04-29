@@ -98,12 +98,23 @@ func (g *Grid) CheckMatchCharacter(row, col, index int) bool {
 		return false
 	}
 
+	x, y = fx+8, fy+9
+	resx, resy = 8, index*CELL_W+9
+	rescolor = robotgo.GetColor(robotgo.ToMMBitmapRef(g.resbmp), resx, resy)
+	color = robotgo.GetColor(robotgo.ToMMBitmapRef(g.screenbmp), x, y)
+	if row == 0 && col <= 1 {
+		fmt.Printf("row 0 col %d color 3(scr %d, %d, bmp %d, %d): bmp %x scr %x\n", col, x, y, resx, resy, rescolor, color)
+	}
+	if rescolor != color {
+		return false
+	}
+
 	x, y = fx+8, fy+15
 	resx, resy = 8, index*CELL_W+15
 	rescolor = robotgo.GetColor(robotgo.ToMMBitmapRef(g.resbmp), resx, resy)
 	color = robotgo.GetColor(robotgo.ToMMBitmapRef(g.screenbmp), x, y)
 	if row == 0 && col <= 1 {
-		fmt.Printf("row 0 col %d color 3(scr %d, %d, bmp %d, %d): bmp %x scr %x\n", col, x, y, resx, resy, rescolor, color)
+		fmt.Printf("row 0 col %d color 4(scr %d, %d, bmp %d, %d): bmp %x scr %x\n", col, x, y, resx, resy, rescolor, color)
 	}
 	if rescolor != color {
 		return false
@@ -129,6 +140,7 @@ func (g *Grid) OrgPos() (ox, oy int) {
 }
 
 func (g *Grid) ForUseData(val byte) byte {
+
 	if val >= 7 && val <= 14 {
 		return 15 - val
 	} else if val == 1 {

@@ -96,7 +96,7 @@ func getEmptyIndex(dat []byte, index []int) []int {
 func getSweeperNum(dat []byte) byte {
 	var n byte = 0
 	for i := 0; i < len(dat); i++ {
-		if dat[i] == 0xff {
+		if dat[i] == 31 {
 			n++
 		}
 	}
@@ -121,13 +121,13 @@ func GetSweeper(dat []byte) []byte {
 
 			if dat[i] == (byte)(len(emptySt))+n {
 				for j := 0; j < len(emptySt); j++ {
-					dat[emptySt[j]] = 0xff
+					dat[emptySt[j]] = 31
 					update = true
 				}
 			}
-			if dat[i] == n && dat[i] != 0 && dat[i] != 0xff {
+			if dat[i] == n && dat[i] != 0 && dat[i] != 31 {
 				for j := 0; j < len(emptySt); j++ {
-					dat[emptySt[j]] = 0xaa
+					dat[emptySt[j]] = 30
 					update = true
 				}
 			}
