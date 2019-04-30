@@ -104,7 +104,7 @@ func getEmptyIndex(dat []byte, index []int) []int {
 func getSweeperNum(dat []byte) byte {
 	var n byte = 0
 	for i := 0; i < len(dat); i++ {
-		if dat[i] == SWEEPUNIT && dat[i] == SWEEPDIDUNIT {
+		if dat[i] == SWEEPUNIT || dat[i] == SWEEPDIDUNIT {
 			n++
 		}
 	}
