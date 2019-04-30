@@ -12,8 +12,8 @@ type unit struct {
 }
 
 const EMPYTUNIT byte = 10
-const SAFEUNIT byte = 0xaa  //30
-const SWEEPUNIT byte = 0xff //31
+const SAFEUNIT byte = 30  //30
+const SWEEPUNIT byte = 31 //31
 const SWEEPDIDUNIT byte = 0xff
 
 func getCornerIndex(n int) []int {
