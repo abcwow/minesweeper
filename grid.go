@@ -156,6 +156,14 @@ func (g *Grid) ForUseData(val byte) byte {
 	return 0
 }
 
+func (g *Grid) StartNewGame() {
+
+	ex, ey := g.ox+CELL_W*GRID_W/2, g.oy-CELL_W*3/2
+
+	robotgo.MoveMouseSmooth(ex, ey, 1.0, 3.0)
+	robotgo.MouseClick("left", true)
+}
+
 func (g *Grid) UpdateGridState() (info [CELL_N]byte, err error) {
 
 	fmt.Println("===================================================================")
