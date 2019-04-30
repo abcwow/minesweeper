@@ -13,7 +13,7 @@ func MoveAndClick(startX, startY int, grid []byte) {
 				ex := startX + j*16 + 8
 				ey := startY + i*16 + 8
 				robotgo.MoveMouseSmooth(ex, ey, 1.0, 3.0)
-				robotgo.MouseClick("right", true)
+				robotgo.MouseClick("right", false)
 
 			}
 			if grid[i*30+j] == 30 {
@@ -21,7 +21,7 @@ func MoveAndClick(startX, startY int, grid []byte) {
 				ex := startX + j*16 + 8
 				ey := startY + i*16 + 8
 				robotgo.MoveMouseSmooth(ex, ey, 1.0, 3.0)
-				robotgo.MouseClick("left", true)
+				robotgo.MouseClick("left", false)
 			}
 		}
 	}
