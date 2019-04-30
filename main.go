@@ -38,9 +38,9 @@ func aRobotgo() {
 		}
 
 		//mouse
-		//ox, oy := g.OrgPos()
+		ox, oy := g.OrgPos()
 		// grid := *[30][16]byte
-		//MoveAndClick(ox, oy, grid)
+		MoveAndClick(ox, oy, control)
 
 		//time.Sleep(3e9)
 
