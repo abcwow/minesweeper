@@ -4,10 +4,11 @@ import "fmt"
 import "time"
 import "math/rand"
 
+const UNKNOWUNIT byte = 0
 const EMPYTUNIT byte = 10
-const SAFEUNIT byte = 0xaa  //30
-const SWEEPUNIT byte = 0xff //31
-const SWEEPDIDUNIT byte = 0xff
+const SAFEUNIT byte = 30  //30
+const SWEEPUNIT byte = 31 //31
+const SWEEPDIDUNIT byte = 0XFF
 
 func getCornerIndex(n int) []int {
 	var dat [8]int
@@ -263,7 +264,7 @@ func GetSweeper(dat []byte) []byte {
 
 			for _, v := range beside {
 				v = v
-				if dat[v] != 0 && dat[v] != 0x10 && dat[v] != 0xff {
+				if dat[v] != UNKNOWUNIT && dat[v] != 0x10 && dat[v] != SWEEPUNIT {
 					sweeperCalMulUnit(dat, i, v)
 				}
 
@@ -314,7 +315,7 @@ func SweeperCreateMap() SweeperMap {
 }
 
 func datIsValue(dat byte) bool {
-	if dat != 0 && dat != 10 && dat != 0xff {
+	if dat != UNKNOWUNIT && dat != EMPYTUNIT && dat != SWEEPUNIT && dat != SWEEPDIDUNIT {
 		return true
 	} else {
 		return false
@@ -470,12 +471,10 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 			break
 
 		case SWEEPERSTEPRAMDON:
-
 			index := getRandSweep()
 			if dat[index] != SWEEPUNIT && dat[index] == 0 {
 				dat[index] = SAFEUNIT
 			}
-
 			return dat
 		}
 	}
