@@ -4,16 +4,9 @@ import "fmt"
 import "time"
 import "math/rand"
 
-type unit struct {
-	state uint8
-
-	besides []int
-	corner  []int
-}
-
 const EMPYTUNIT byte = 10
-const SAFEUNIT byte = 30  //30
-const SWEEPUNIT byte = 31 //31
+const SAFEUNIT byte = 0xaa  //30
+const SWEEPUNIT byte = 0xff //31
 const SWEEPDIDUNIT byte = 0xff
 
 func getCornerIndex(n int) []int {
@@ -104,68 +97,16 @@ func getBesideIndex(n int) []int {
 	}
 }
 
-func getBesideIndexAll(n int) []int {
-	var dat [8]int
+func getAroundIndex(n int) []int {
+	var around []int
+	beside := getBesideIndex(n)
+	corner := getCornerIndex(n)
 
-	if n == 0 {
-		dat[0] = n + 1
-		dat[1] = n + 30
-		dat[2] = n + 31
-		return dat[:3]
-	} else if n == 29 {
-		dat[0] = n - 1
-		dat[1] = n + 29
-		dat[2] = n + 30
-		return dat[:3]
-	} else if n == 450 {
-		dat[0] = n + 1
-		dat[1] = n - 30
-		dat[2] = n - 29
-		return dat[:3]
-	} else if n == 479 {
-		dat[0] = n - 1
-		dat[1] = n - 30
-		dat[2] = n - 31
-		return dat[:3]
-	} else if n < 30 {
-		dat[0] = n - 1
-		dat[1] = n + 1
-		dat[2] = n + 29
-		dat[3] = n + 30
-		dat[4] = n + 31
-		return dat[:5]
-	} else if n > 450 {
-		dat[0] = n - 1
-		dat[1] = n + 1
-		dat[2] = n - 29
-		dat[3] = n - 30
-		dat[4] = n - 31
-		return dat[:5]
-	} else if n%30 == 0 {
-		dat[0] = n - 30
-		dat[1] = n - 29
-		dat[2] = n + 1
-		dat[3] = n + 30
-		dat[4] = n + 31
-		return dat[:5]
-	} else if n%30 == 29 {
-		dat[0] = n - 31
-		dat[1] = n - 30
-		dat[2] = n - 1
-		dat[3] = n + 29
-		dat[4] = n + 30
-		return dat[:5]
-	} else {
-		dat[0] = n - 31
-		dat[1] = n - 30
-		dat[2] = n - 29
-		dat[3] = n - 1
-		dat[4] = n + 1
-		dat[5] = n + 29
-		dat[6] = n + 30
-		dat[7] = n + 31
-		return dat[:8]
+	around = beside
+	for _, v := range corner {
+		around = append(around, v)
 	}
+	return around
 }
 
 func getState(dat []byte, index []int) []byte {
@@ -190,7 +131,7 @@ func getEmptyIndex(dat []byte, index []int) []int {
 	return state
 }
 
-func getSweeperNum(dat []byte) byte {
+func getBombNum(dat []byte) byte {
 	var n byte = 0
 	for i := 0; i < len(dat); i++ {
 		if dat[i] == SWEEPUNIT || dat[i] == SWEEPDIDUNIT {
@@ -200,7 +141,7 @@ func getSweeperNum(dat []byte) byte {
 	return n
 }
 
-func getStaticArea(a []int, comm []int) []int {
+func getStaticArea(a []int, comm []int, n int) []int {
 	var aStatic []int
 	NumExist := make(map[int]int)
 	for _, v := range comm {
@@ -208,7 +149,7 @@ func getStaticArea(a []int, comm []int) []int {
 	}
 	for _, v := range a {
 		_, exist := NumExist[v]
-		if !exist {
+		if !exist && v != n {
 			aStatic = append(aStatic, v)
 		}
 	}
@@ -230,75 +171,62 @@ func getCommArea(a []int, b []int) []int {
 	return comm
 }
 
-func getArea(a []int, b []int) (aStatic []int, bStatic []int, comm []int) {
+func getArea(a []int, b []int, aIndex int, bIndex int) (aStatic []int, bStatic []int, comm []int) {
 	comm = getCommArea(a, b)
-	aStatic = getStaticArea(a, comm)
-	bStatic = getStaticArea(b, comm)
+	aStatic = getStaticArea(a, comm, bIndex)
+	bStatic = getStaticArea(b, comm, aIndex)
 	return aStatic, bStatic, comm
 }
 
-func CalBorderState(dat []byte, a int, b int) {
-	var tmp byte
-	n1 := dat[a]
-	n2 := dat[b]
-	if (n2 == 0) || (n2 > 9) {
+func getAbs(n int) int {
+	if n > 0 {
+		return n
+	} else {
+		return 0 - n
+	}
+}
+
+func sweeperCalMulUnit(dat []byte, a int, b int) {
+	if dat[a] < dat[b] {
 		return
 	}
-	if n1 < n2 {
-		return
-	}
-	aAround := getBesideIndexAll(a)
-	bAround := getBesideIndexAll(b)
-	aStaticIndex, bStaticIndex, commIndex := getArea(aAround, bAround)
-	commIndex = commIndex
+	aAround := getAroundIndex(a)
+	bAround := getAroundIndex(b)
+	aStaticIndex, bStaticIndex, commIndex := getArea(aAround, bAround, a, b)
 	aStaticState := getState(dat, aStaticIndex)
-	aBombNum := getSweeperNum(aStaticState)
 	bStaticState := getState(dat, bStaticIndex)
-	bBombNum := getSweeperNum(bStaticState)
-	//commState := getState(dat, commIndex)
-	//commBombNum := getSweeperNum(commState)
+	commState := getState(dat, commIndex)
+	aStaticBombNum := getBombNum(aStaticState)
+	bStaticBomnNum := getBombNum(bStaticState)
+	commBombNum := getBombNum(commState)
+	commBombNum = commBombNum
 
 	aEmptyIndex := getEmptyIndex(dat, aStaticIndex)
 	aEmptyNum := (byte)(len(aEmptyIndex))
 	bEmptyIndex := getEmptyIndex(dat, bStaticIndex)
 	bEmptyNum := (byte)(len(bEmptyIndex))
 
-	if aBombNum > bBombNum {
-		tmp = aBombNum - bBombNum
+	if dat[a] == dat[b] {
+		if aStaticBombNum != bStaticBomnNum {
+			if aStaticBombNum < bStaticBomnNum && (byte)(aEmptyNum) == bStaticBomnNum-aStaticBombNum {
+				for _, v := range aEmptyIndex {
+					dat[v] = SWEEPUNIT
+				}
+			}
+			if aStaticBombNum > bStaticBomnNum && (byte)(bEmptyNum) == aStaticBombNum-bStaticBomnNum {
+				for _, v := range bEmptyIndex {
+					dat[v] = SWEEPUNIT
+				}
+			}
+		}
 	} else {
-		tmp = bBombNum - aBombNum
-	}
 
-	if n1-n2 != tmp {
-		if (aBombNum > bBombNum) && bEmptyNum == tmp {
-			//fmt.Println(bStaticIndex)
-			for _, v := range bEmptyIndex {
-				dat[v] = SWEEPUNIT
-			}
-		}
-		if (aBombNum < bBombNum) && aEmptyNum == tmp {
-			//fmt.Println(aStaticIndex)
-			for _, v := range aEmptyIndex {
-				dat[v] = SWEEPUNIT
-
-			}
-		}
-		if aBombNum == bBombNum {
-
-		}
 	}
 }
 
 func getRandSweep() int {
+	//fix
 	return rand.Intn(480)
-}
-func stateAllNotZero(dat []byte) bool {
-	for i := 0; i < len(dat); i++ {
-		if dat[i] == 0 {
-			return false
-		}
-	}
-	return true
 }
 
 func GetSweeper(dat []byte) []byte {
@@ -308,24 +236,15 @@ func GetSweeper(dat []byte) []byte {
 	for update == true {
 		update = false
 		for i := 0; i < 480; i++ {
-			var around []int
 			if dat[i] == EMPYTUNIT || dat[i] == SWEEPDIDUNIT {
 				continue
 			}
-			//besides := getBesideIndex(i)
-
 			beside := getBesideIndex(i)
-			corner := getCornerIndex(i)
-
-			around = beside
-			for _, v := range corner {
-				around = append(around, v)
-			}
+			around := getAroundIndex(i)
 
 			emptySt := getEmptyIndex(dat, around)
-
 			aroundState := getState(dat, around)
-			n := getSweeperNum(aroundState)
+			n := getBombNum(aroundState)
 
 			if dat[i] == (byte)(len(emptySt))+n {
 				for j := 0; j < len(emptySt); j++ {
@@ -343,7 +262,11 @@ func GetSweeper(dat []byte) []byte {
 			}
 
 			for _, v := range beside {
-				CalBorderState(dat, i, v)
+				v = v
+				if dat[v] != 0 && dat[v] != 0x10 && dat[v] != 0xff {
+					sweeperCalMulUnit(dat, i, v)
+				}
+
 			}
 		}
 	}
@@ -356,16 +279,209 @@ func GetSweeper(dat []byte) []byte {
 	return dat
 }
 
+//V2
+
+type unit struct {
+	state byte
+
+	beside []int
+	corner []int
+	around []int
+}
 type SweeperMap struct {
 	unit [480]unit
+
+	step int
+	root map[int]int
+}
+
+var sw SweeperMap
+
+func SweeperInit() {
+	sw = SweeperCreateMap()
 }
 
 func SweeperCreateMap() SweeperMap {
 	rand.Seed(time.Now().Unix())
 	sm := SweeperMap{}
+	sm.root = make(map[int]int)
 	for i := 0; i < 480; i++ {
-		sm.unit[i].besides = getBesideIndex(i)
+		sm.unit[i].beside = getBesideIndex(i)
+		sm.unit[i].corner = getCornerIndex(i)
+		sm.unit[i].around = getAroundIndex(i)
 	}
-	fmt.Println(sm)
 	return sm
+}
+
+func datIsValue(dat byte) bool {
+	if dat != 0 && dat != 10 && dat != 0xff {
+		return true
+	} else {
+		return false
+	}
+}
+
+func sweeperCalSingleUnit(dat []byte, n int, around []int) bool {
+	var update bool = false
+	emptyIndex := getEmptyIndex(dat, around)
+	aroundState := getState(dat, around)
+	aroundBombNum := getBombNum(aroundState)
+
+	if dat[n] == (byte)(len(emptyIndex))+aroundBombNum {
+		for i := 0; i < len(emptyIndex); i++ {
+			dat[emptyIndex[i]] = SWEEPUNIT
+			update = true
+		}
+	}
+	if dat[n] == aroundBombNum && dat[n] != 0 && dat[n] != SWEEPUNIT {
+		for i := 0; i < len(emptyIndex); i++ {
+			dat[emptyIndex[i]] = SAFEUNIT
+			update = true
+		}
+	}
+	return update
+}
+
+/*
+func SweeperCal(dat []byte) []byte {
+	var update bool = true
+	var cnt int = 0
+
+	for update == true {
+		update = false
+		for i := 0; i < 480; i++ {
+			if dat[i] == EMPYTUNIT || dat[i] == SWEEPDIDUNIT {
+				continue
+			}
+			around := getAroundIndex(i)
+			if (byte)(len(getEmptyIndex(dat, around))) == 0 {
+				continue
+			}
+
+			beside := sw.unit[i].beside
+			around = sw.unit[i].around
+
+			up := sweeperCalSingleUnit(dat, i, around)
+			if up {
+				update = up
+			}
+
+			for _, v := range beside {
+				if datIsValue(dat[v]) {
+					sweeperCalMulUnit(dat, i, v)
+				}
+			}
+		}
+	}
+	if cnt == 0 {
+		index := getRandSweep()
+		if dat[index] != SWEEPUNIT && dat[index] == 0 {
+			dat[index] = SAFEUNIT
+		}
+	}
+	return dat
+}
+*/
+func sweeperSetDat(sw SweeperMap, dat []byte) int {
+	var notZeroCnt int = 0
+	for i := 0; i < len(dat); i++ {
+		sw.unit[i].state = dat[i]
+		if datIsValue(dat[i]) {
+			sw.root[i] = i
+			notZeroCnt++
+		}
+	}
+	return notZeroCnt
+}
+
+const SWEEPERSTEPINIT int = 0
+const SWEEPERSTEPCAL int = 10
+const SWEEPERSTEPRAMDON int = 20
+
+func sweeperCal(sw SweeperMap, dat []byte) bool {
+	var update = false
+
+	for _, v := range sw.root {
+		aroundIndex := getAroundIndex(v)
+		if (byte)(len(getEmptyIndex(dat, aroundIndex))) == 0 {
+			delete(sw.root, v)
+			continue
+		}
+
+		besideIndex := sw.unit[v].beside
+		aroundIndex = sw.unit[v].around
+
+		up := sweeperCalSingleUnit(dat, v, aroundIndex)
+		if up {
+			update = up
+		}
+
+		for _, beside := range besideIndex {
+			if datIsValue(dat[beside]) {
+				sweeperCalMulUnit(dat, v, beside)
+			}
+		}
+	}
+	return update
+}
+
+func getBombProbability(dat []byte, n int) int {
+	var pro int = 0
+	if dat[n] != 0 {
+		return 0
+	}
+	aroundIndex := getAroundIndex(n)
+	for _, v := range aroundIndex {
+		around := getAroundIndex(v)
+		aroundState := getState(dat, around)
+		aroundBombNum := getBombNum(aroundState)
+		empytNum := len(getEmptyIndex(dat, around))
+		pro = pro + (int)(empytNum)/(int)(dat[v]-aroundBombNum)
+	}
+	return pro
+}
+
+func SweeperCal(sw SweeperMap, dat []byte) []byte {
+	var notZeroCnt int = 0
+	sw.step = SWEEPERSTEPINIT
+	for {
+		switch sw.step {
+		case SWEEPERSTEPINIT:
+			notZeroCnt = sweeperSetDat(sw, dat)
+			notZeroCnt = notZeroCnt
+			sw.step = SWEEPERSTEPCAL
+			break
+
+		case SWEEPERSTEPCAL:
+			var updateOnce bool = false
+			for {
+				update := sweeperCal(sw, dat)
+				if update {
+					updateOnce = true
+				} else {
+					if updateOnce {
+						return dat
+					} else {
+						sw.step = SWEEPERSTEPRAMDON
+						break
+					}
+				}
+			}
+			break
+
+		case SWEEPERSTEPRAMDON:
+
+			index := getRandSweep()
+			if dat[index] != SWEEPUNIT && dat[index] == 0 {
+				dat[index] = SAFEUNIT
+			}
+
+			return dat
+		}
+	}
+}
+
+func debug() {
+	var a string
+	fmt.Scanf("%s", &a)
 }
