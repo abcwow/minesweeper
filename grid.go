@@ -144,7 +144,7 @@ func (g *Grid) ForUseData(val byte) byte {
 	if val >= 7 && val <= 14 {
 		return 15 - val
 	} else if val == 1 {
-		return 0xff
+		return 32
 	} else if val == 0 {
 		return 0
 	} else if val == 15 {

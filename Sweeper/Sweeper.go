@@ -8,7 +8,7 @@ const UNKNOWUNIT byte = 0
 const EMPYTUNIT byte = 10
 const SAFEUNIT byte = 30  //30
 const SWEEPUNIT byte = 31 //31
-const SWEEPDIDUNIT byte = 0XFF
+const SWEEPDIDUNIT byte = 32
 
 func getCornerIndex(n int) []int {
 	var dat [8]int
@@ -423,7 +423,7 @@ func sweeperCalOnce(sw SweeperMap, dat []byte) bool {
 
 		for _, beside := range besideIndex {
 			if datIsValue(dat[beside]) {
-				sweeperCalMulUnit(dat, v, beside)
+				//sweeperCalMulUnit(dat, v, beside)
 			}
 		}
 	}
