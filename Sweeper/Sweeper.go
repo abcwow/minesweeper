@@ -292,8 +292,9 @@ type unit struct {
 type SweeperMap struct {
 	unit [480]unit
 
-	step int
-	root map[int]int
+	step      int
+	valueRoot map[int]int
+	zeroRoot  map[int]int
 }
 
 var sw SweeperMap
@@ -305,7 +306,8 @@ func SweeperInit() {
 func SweeperCreateMap() SweeperMap {
 	rand.Seed(time.Now().Unix())
 	sm := SweeperMap{}
-	sm.root = make(map[int]int)
+	sm.valueRoot = make(map[int]int)
+	sm.zeroRoot = make(map[int]int)
 	for i := 0; i < 480; i++ {
 		sm.unit[i].beside = getBesideIndex(i)
 		sm.unit[i].corner = getCornerIndex(i)
@@ -388,8 +390,10 @@ func sweeperSetDat(sw SweeperMap, dat []byte) int {
 	for i := 0; i < len(dat); i++ {
 		sw.unit[i].state = dat[i]
 		if datIsValue(dat[i]) {
-			sw.root[i] = i
+			sw.valueRoot[i] = i
 			notZeroCnt++
+		} else {
+			sw.zeroRoot[i] = i
 		}
 	}
 	return notZeroCnt
@@ -399,13 +403,13 @@ const SWEEPERSTEPINIT int = 0
 const SWEEPERSTEPCAL int = 10
 const SWEEPERSTEPRAMDON int = 20
 
-func sweeperCal(sw SweeperMap, dat []byte) bool {
+func sweeperCalOnce(sw SweeperMap, dat []byte) bool {
 	var update = false
 
-	for _, v := range sw.root {
+	for _, v := range sw.valueRoot {
 		aroundIndex := getAroundIndex(v)
 		if (byte)(len(getEmptyIndex(dat, aroundIndex))) == 0 {
-			delete(sw.root, v)
+			delete(sw.valueRoot, v)
 			continue
 		}
 
@@ -424,6 +428,22 @@ func sweeperCal(sw SweeperMap, dat []byte) bool {
 		}
 	}
 	return update
+}
+
+func sweeperCal(sw SweeperMap, dat []byte) bool {
+	var updateOnce bool = false
+	for {
+		update := sweeperCalOnce(sw, dat)
+		if update {
+			updateOnce = true
+		} else {
+			if updateOnce {
+				return true
+			} else {
+				return false
+			}
+		}
+	}
 }
 
 func getBombProbability(dat []byte, n int) int {
@@ -454,23 +474,20 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 			break
 
 		case SWEEPERSTEPCAL:
-			var updateOnce bool = false
-			for {
-				update := sweeperCal(sw, dat)
-				if update {
-					updateOnce = true
-				} else {
-					if updateOnce {
-						return dat
-					} else {
-						sw.step = SWEEPERSTEPRAMDON
-						break
-					}
-				}
+			if sweeperCal(sw, dat) == true {
+				return dat
+			} else {
+				sw.step = SWEEPERSTEPRAMDON
 			}
 			break
 
 		case SWEEPERSTEPRAMDON:
+			/*
+				for _, v := range sw.zeroRoot {
+					pro := getBombProbability(dat, v)
+					pro = pro
+				}
+			*/
 			index := getRandSweep()
 			if dat[index] != SWEEPUNIT && dat[index] == 0 {
 				dat[index] = SAFEUNIT
