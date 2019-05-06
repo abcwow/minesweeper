@@ -317,7 +317,7 @@ func SweeperCreateMap() SweeperMap {
 }
 
 func datIsValue(dat byte) bool {
-	if dat != UNKNOWUNIT && dat != EMPYTUNIT && dat != SWEEPUNIT && dat != SWEEPDIDUNIT {
+	if dat != UNKNOWUNIT && dat != EMPYTUNIT && dat != SAFEUNIT && dat != SWEEPUNIT && dat != SWEEPDIDUNIT {
 		return true
 	} else {
 		return false
@@ -412,7 +412,10 @@ func sweeperCalOnce(sw SweeperMap, dat []byte) bool {
 			delete(sw.valueRoot, v)
 			continue
 		}
-
+		if datIsValue(dat[v]) == false {
+			delete(sw.valueRoot, v)
+			continue
+		}
 		besideIndex := sw.unit[v].beside
 		aroundIndex = sw.unit[v].around
 
@@ -423,7 +426,7 @@ func sweeperCalOnce(sw SweeperMap, dat []byte) bool {
 
 		for _, beside := range besideIndex {
 			if datIsValue(dat[beside]) {
-				//sweeperCalMulUnit(dat, v, beside)
+				sweeperCalMulUnit(dat, v, beside)
 			}
 		}
 	}
