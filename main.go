@@ -12,6 +12,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"./Sweeper"
 )
@@ -26,6 +27,7 @@ func aRobotgo() {
 
 	for {
 		//g.UpdateGridState()
+		fmt.Println("begin calc")
 		state, err := g.UpdateGridState()
 		if err != nil {
 			fmt.Println("----------------------------------------------------------------------")
@@ -33,6 +35,8 @@ func aRobotgo() {
 			var str string
 			fmt.Scanln(&str)
 			g.StartNewGame()
+			time.Sleep(1e9)
+			continue
 		}
 		//
 
