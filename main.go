@@ -22,6 +22,8 @@ func aRobotgo() {
 
 	g := NewGrid()
 
+	sw := sweeper.SweeperCreateMap()
+
 	for {
 		//g.UpdateGridState()
 		state, err := g.UpdateGridState()
@@ -33,7 +35,8 @@ func aRobotgo() {
 			g.StartNewGame()
 		}
 		//
-		control := sweeper.GetSweeper(state[:480])
+
+		control := sweeper.SweeperCal(sw, state[:480])
 		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 		fmt.Println("len of control is: ", len(control))
 		for i := 0; i < 16; i++ {
