@@ -453,18 +453,12 @@ func sweeperCal(sw SweeperMap, dat []byte) bool {
 	}
 }
 
-func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
+func calAroundProbability(dat []byte, aroundIndex []int) float32 {
 	var pro float32 = 1
-	if dat[n] != 0 {
-		return 0
-	}
-	aroundIndex := getAroundIndex(n)
-	empytNum := len(getEmptyIndex(dat, aroundIndex))
-	if empytNum == len(aroundIndex) {
-		return (float32)(bombCnt) / (float32)(zeroCnt)
-	}
-
 	for _, v := range aroundIndex {
+		if datIsValue(dat[v]) == false {
+			continue
+		}
 		around := getAroundIndex(v)
 		aroundState := getState(dat, around)
 		aroundBombNum := getBombNum(aroundState)
@@ -474,11 +468,25 @@ func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
 	return 1 - pro
 }
 
+func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
+	if dat[n] != 0 {
+		return 1
+	}
+	aroundIndex := getAroundIndex(n)
+	empytNum := len(getEmptyIndex(dat, aroundIndex))
+	aroundState := getState(dat, aroundIndex)
+	aroundBombNum := getBombNum(aroundState)
+	if empytNum == len(aroundIndex)-(int)(aroundBombNum) {
+		return (float32)(bombCnt) / (float32)(zeroCnt)
+	} else {
+		return calAroundProbability(dat, aroundIndex)
+	}
+}
+
 func SweeperCal(sw SweeperMap, dat []byte) []byte {
 	var bombCnt int = 0
 	sw.step = SWEEPERSTEPINIT
 	for {
-		//fmt.Printf("step: %d,\n", sw.step)
 		switch sw.step {
 		case SWEEPERSTEPINIT:
 			bombCnt = sweeperSetDat(sw, dat)
