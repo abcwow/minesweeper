@@ -386,17 +386,21 @@ func SweeperCal(dat []byte) []byte {
 }
 */
 func sweeperSetDat(sw SweeperMap, dat []byte) int {
-	var notZeroCnt int = 0
+	var BombCnt int = 0
 	for i := 0; i < len(dat); i++ {
 		sw.unit[i].state = dat[i]
 		if datIsValue(dat[i]) {
 			sw.valueRoot[i] = i
-			notZeroCnt++
 		} else {
-			sw.zeroRoot[i] = i
+			if dat[i] == SWEEPUNIT || dat[i] == SWEEPDIDUNIT {
+				BombCnt++
+			} else if dat[i] == UNKNOWUNIT {
+				sw.zeroRoot[i] = i
+			}
+
 		}
 	}
-	return notZeroCnt
+	return BombCnt
 }
 
 const SWEEPERSTEPINIT int = 0
@@ -449,30 +453,35 @@ func sweeperCal(sw SweeperMap, dat []byte) bool {
 	}
 }
 
-func getBombProbability(dat []byte, n int) int {
-	var pro int = 0
+func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
+	var pro float32 = 1
 	if dat[n] != 0 {
 		return 0
 	}
 	aroundIndex := getAroundIndex(n)
+	empytNum := len(getEmptyIndex(dat, aroundIndex))
+	if empytNum == len(aroundIndex) {
+		return (float32)(bombCnt) / (float32)(zeroCnt)
+	}
+
 	for _, v := range aroundIndex {
 		around := getAroundIndex(v)
 		aroundState := getState(dat, around)
 		aroundBombNum := getBombNum(aroundState)
 		empytNum := len(getEmptyIndex(dat, around))
-		pro = pro + (int)(empytNum)/(int)(dat[v]-aroundBombNum)
+		pro = pro * (1 - (float32)(dat[v]-aroundBombNum)/(float32)(empytNum))
 	}
-	return pro
+	return 1 - pro
 }
 
 func SweeperCal(sw SweeperMap, dat []byte) []byte {
-	var notZeroCnt int = 0
+	var bombCnt int = 0
 	sw.step = SWEEPERSTEPINIT
 	for {
+		//fmt.Printf("step: %d,\n", sw.step)
 		switch sw.step {
 		case SWEEPERSTEPINIT:
-			notZeroCnt = sweeperSetDat(sw, dat)
-			notZeroCnt = notZeroCnt
+			bombCnt = sweeperSetDat(sw, dat)
 			sw.step = SWEEPERSTEPCAL
 			break
 
@@ -485,15 +494,23 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 			break
 
 		case SWEEPERSTEPRAMDON:
-			/*
-				for _, v := range sw.zeroRoot {
-					pro := getBombProbability(dat, v)
-					pro = pro
-				}
-			*/
-			index := getRandSweep()
-			if dat[index] != SWEEPUNIT && dat[index] == 0 {
+			var pro float32
+			var proMin float32 = 1
+			var indexMin int = 0
+
+			if len(sw.valueRoot) == 0 {
+				index := getRandSweep()
 				dat[index] = SAFEUNIT
+			} else {
+				for _, v := range sw.zeroRoot {
+					pro = getBombProbability(dat, v, 99-bombCnt, len(sw.zeroRoot))
+					if pro < proMin {
+						proMin = pro
+						indexMin = v
+					}
+				}
+				fmt.Printf("indexMin: %d, pro: %f\n", indexMin, proMin)
+				dat[indexMin] = SAFEUNIT
 			}
 			return dat
 		}
