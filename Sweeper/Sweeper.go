@@ -483,6 +483,16 @@ func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
 	}
 }
 
+func getZeroCnt(dat []byte) int {
+	var cnt int = 0
+	for i := 0; i < len(dat); i++ {
+		if dat[i] == 0 {
+			cnt++
+		}
+	}
+	return cnt
+}
+
 func SweeperCal(sw SweeperMap, dat []byte) []byte {
 	var bombCnt int = 0
 	sw.step = SWEEPERSTEPINIT
@@ -511,7 +521,7 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 				dat[index] = SAFEUNIT
 			} else {
 				for _, v := range sw.zeroRoot {
-					pro = getBombProbability(dat, v, 99-bombCnt, len(sw.zeroRoot))
+					pro = getBombProbability(dat, v, 99-bombCnt, getZeroCnt(dat))
 					if pro < proMin {
 						proMin = pro
 						indexMin = v
