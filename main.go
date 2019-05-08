@@ -36,7 +36,6 @@ func aRobotgo() {
 			fmt.Scanln(&str)
 			g.StartNewGame()
 			time.Sleep(1e9)
-			sw = sweeper.SweeperCreateMap()
 			continue
 		}
 		//
