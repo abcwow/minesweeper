@@ -187,9 +187,10 @@ func getAbs(n int) int {
 	}
 }
 
-func sweeperCalMulUnit(dat []byte, a int, b int) {
+func sweeperCalBesideUnit(dat []byte, a int, b int) bool {
+	var update = false
 	if dat[a] < dat[b] {
-		return
+		return update
 	}
 	aAround := getAroundIndex(a)
 	bAround := getAroundIndex(b)
@@ -212,23 +213,25 @@ func sweeperCalMulUnit(dat []byte, a int, b int) {
 			if aStaticBombNum < bStaticBomnNum && (byte)(aEmptyNum) == bStaticBomnNum-aStaticBombNum {
 				for _, v := range aEmptyIndex {
 					dat[v] = SWEEPUNIT
+					update = true
 				}
 			}
 			if aStaticBombNum > bStaticBomnNum && (byte)(bEmptyNum) == aStaticBombNum-bStaticBomnNum {
 				for _, v := range bEmptyIndex {
 					dat[v] = SWEEPUNIT
+					update = true
 				}
 			}
 		}
 	} else {
-		//for {
-
-		//}
+		if aStaticBombNum <= bStaticBomnNum && (byte)(aEmptyNum) == dat[a]-dat[b]+bStaticBomnNum {
+			for _, v := range aEmptyIndex {
+				dat[v] = SWEEPUNIT
+				update = true
+			}
+		}
 	}
-}
-
-func getRandSweep() int {
-	return rand.Intn(480)
+	return update
 }
 
 type unit struct {
@@ -238,6 +241,7 @@ type unit struct {
 	corner []int
 	around []int
 }
+
 type SweeperMap struct {
 	unit [480]unit
 
@@ -293,6 +297,19 @@ func sweeperCalSingleUnit(dat []byte, n int, around []int) bool {
 	return update
 }
 
+func sweeperCalMulUnit(dat []byte, n int, besideIndex []int) bool {
+	var update bool = false
+	for _, beside := range besideIndex {
+		if datIsValue(dat[beside]) {
+			up := sweeperCalBesideUnit(dat, n, beside)
+			if up {
+				update = up
+			}
+		}
+	}
+	return update
+}
+
 func sweeperSetDat(sw SweeperMap, dat []byte) int {
 	var BombCnt int = 0
 	for i := 0; i < len(dat); i++ {
@@ -327,18 +344,17 @@ func sweeperCalOnce(sw SweeperMap, dat []byte) bool {
 			delete(sw.valueRoot, v)
 			continue
 		}
-		besideIndex := sw.unit[v].beside
-		aroundIndex = sw.unit[v].around
 
+		aroundIndex = sw.unit[v].around
 		up := sweeperCalSingleUnit(dat, v, aroundIndex)
 		if up {
 			update = up
 		}
 
-		for _, beside := range besideIndex {
-			if datIsValue(dat[beside]) {
-				sweeperCalMulUnit(dat, v, beside)
-			}
+		besideIndex := sw.unit[v].beside
+		up = sweeperCalMulUnit(dat, v, besideIndex)
+		if up {
+			update = up
 		}
 	}
 	return update
@@ -388,6 +404,10 @@ func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
 	} else {
 		return calAroundProbability(dat, aroundIndex)
 	}
+}
+
+func getRandSweep() int {
+	return rand.Intn(480)
 }
 
 func SweeperCal(sw SweeperMap, dat []byte) []byte {
