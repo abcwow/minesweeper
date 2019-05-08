@@ -259,7 +259,7 @@ func SweeperCreateMap() SweeperMap {
 	return sweeperMap
 }
 
-func sweeperReset(sweeperMap SweeperMap) {
+func sweeperReset(sweeperMap *SweeperMap) {
 	sweeperMap.valueRoot = make(map[int]int)
 	sweeperMap.zeroRoot = make(map[int]int)
 }
@@ -396,7 +396,7 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 	for {
 		switch sw.step {
 		case SWEEPERSTEPINIT:
-			sweeperReset(sw)
+			sweeperReset(&sw)
 			bombCnt = sweeperSetDat(sw, dat)
 			sw.step = SWEEPERSTEPCAL
 			break
