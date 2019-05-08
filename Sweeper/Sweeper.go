@@ -221,66 +221,15 @@ func sweeperCalMulUnit(dat []byte, a int, b int) {
 			}
 		}
 	} else {
+		//for {
 
+		//}
 	}
 }
 
 func getRandSweep() int {
-	//fix
 	return rand.Intn(480)
 }
-
-func GetSweeper(dat []byte) []byte {
-	var update bool = true
-	var cnt int = 0
-
-	for update == true {
-		update = false
-		for i := 0; i < 480; i++ {
-			if dat[i] == EMPYTUNIT || dat[i] == SWEEPDIDUNIT {
-				continue
-			}
-			beside := getBesideIndex(i)
-			around := getAroundIndex(i)
-
-			emptySt := getEmptyIndex(dat, around)
-			aroundState := getState(dat, around)
-			n := getBombNum(aroundState)
-
-			if dat[i] == (byte)(len(emptySt))+n {
-				for j := 0; j < len(emptySt); j++ {
-					dat[emptySt[j]] = SWEEPUNIT
-					update = true
-					cnt++
-				}
-			}
-			if dat[i] == n && dat[i] != 0 && dat[i] != SWEEPUNIT {
-				for j := 0; j < len(emptySt); j++ {
-					dat[emptySt[j]] = SAFEUNIT
-					update = true
-					cnt++
-				}
-			}
-
-			for _, v := range beside {
-				v = v
-				if dat[v] != UNKNOWUNIT && dat[v] != 0x10 && dat[v] != SWEEPUNIT {
-					sweeperCalMulUnit(dat, i, v)
-				}
-
-			}
-		}
-	}
-	if cnt == 0 {
-		index := getRandSweep()
-		if dat[index] != SWEEPUNIT && dat[index] == 0 {
-			dat[index] = SAFEUNIT
-		}
-	}
-	return dat
-}
-
-//V2
 
 type unit struct {
 	state byte
@@ -297,23 +246,22 @@ type SweeperMap struct {
 	zeroRoot  map[int]int
 }
 
-var sw SweeperMap
-
-func SweeperInit() {
-	sw = SweeperCreateMap()
-}
-
 func SweeperCreateMap() SweeperMap {
 	rand.Seed(time.Now().Unix())
-	sm := SweeperMap{}
-	sm.valueRoot = make(map[int]int)
-	sm.zeroRoot = make(map[int]int)
+	sweeperMap := SweeperMap{}
+	sweeperMap.valueRoot = make(map[int]int)
+	sweeperMap.zeroRoot = make(map[int]int)
 	for i := 0; i < 480; i++ {
-		sm.unit[i].beside = getBesideIndex(i)
-		sm.unit[i].corner = getCornerIndex(i)
-		sm.unit[i].around = getAroundIndex(i)
+		sweeperMap.unit[i].beside = getBesideIndex(i)
+		sweeperMap.unit[i].corner = getCornerIndex(i)
+		sweeperMap.unit[i].around = getAroundIndex(i)
 	}
-	return sm
+	return sweeperMap
+}
+
+func SweeperReset(sweeperMap SweeperMap) {
+	sweeperMap.valueRoot = make(map[int]int)
+	sweeperMap.zeroRoot = make(map[int]int)
 }
 
 func datIsValue(dat byte) bool {
@@ -345,46 +293,6 @@ func sweeperCalSingleUnit(dat []byte, n int, around []int) bool {
 	return update
 }
 
-/*
-func SweeperCal(dat []byte) []byte {
-	var update bool = true
-	var cnt int = 0
-
-	for update == true {
-		update = false
-		for i := 0; i < 480; i++ {
-			if dat[i] == EMPYTUNIT || dat[i] == SWEEPDIDUNIT {
-				continue
-			}
-			around := getAroundIndex(i)
-			if (byte)(len(getEmptyIndex(dat, around))) == 0 {
-				continue
-			}
-
-			beside := sw.unit[i].beside
-			around = sw.unit[i].around
-
-			up := sweeperCalSingleUnit(dat, i, around)
-			if up {
-				update = up
-			}
-
-			for _, v := range beside {
-				if datIsValue(dat[v]) {
-					sweeperCalMulUnit(dat, i, v)
-				}
-			}
-		}
-	}
-	if cnt == 0 {
-		index := getRandSweep()
-		if dat[index] != SWEEPUNIT && dat[index] == 0 {
-			dat[index] = SAFEUNIT
-		}
-	}
-	return dat
-}
-*/
 func sweeperSetDat(sw SweeperMap, dat []byte) int {
 	var BombCnt int = 0
 	for i := 0; i < len(dat); i++ {
@@ -397,7 +305,6 @@ func sweeperSetDat(sw SweeperMap, dat []byte) int {
 			} else if dat[i] == UNKNOWUNIT {
 				sw.zeroRoot[i] = i
 			}
-
 		}
 	}
 	return BombCnt
@@ -483,16 +390,6 @@ func getBombProbability(dat []byte, n int, bombCnt int, zeroCnt int) float32 {
 	}
 }
 
-func getZeroCnt(dat []byte) int {
-	var cnt int = 0
-	for i := 0; i < len(dat); i++ {
-		if dat[i] == 0 {
-			cnt++
-		}
-	}
-	return cnt
-}
-
 func SweeperCal(sw SweeperMap, dat []byte) []byte {
 	var bombCnt int = 0
 	sw.step = SWEEPERSTEPINIT
@@ -521,21 +418,17 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 				dat[index] = SAFEUNIT
 			} else {
 				for _, v := range sw.zeroRoot {
-					pro = getBombProbability(dat, v, 99-bombCnt, getZeroCnt(dat))
+					pro = getBombProbability(dat, v, 99-bombCnt, len(sw.zeroRoot))
 					if pro < proMin {
 						proMin = pro
 						indexMin = v
 					}
 				}
+				fmt.Printf("b:%d, z:%d\n", 99-bombCnt, len(sw.zeroRoot))
 				fmt.Printf("indexMin: %d, pro: %f\n", indexMin, proMin)
 				dat[indexMin] = SAFEUNIT
 			}
 			return dat
 		}
 	}
-}
-
-func debug() {
-	var a string
-	fmt.Scanf("%s", &a)
 }
