@@ -209,31 +209,28 @@ func sweeperCalBesideUnit(dat []byte, a int, b int) bool {
 	bEmptyNum := (byte)(len(bEmptyIndex))
 
 	if dat[a] == dat[b] {
-		if aStaticBombNum != bStaticBombNum {
-			if aStaticBombNum < bStaticBombNum && (byte)(aEmptyNum) == bStaticBombNum-aStaticBombNum {
-				for _, v := range aEmptyIndex {
-					dat[v] = SWEEPUNIT
-					update = true
-				}
+		if aStaticBombNum < bStaticBombNum && (byte)(aEmptyNum) == bStaticBombNum-aStaticBombNum {
+			for _, v := range aEmptyIndex {
+				dat[v] = SWEEPUNIT
+				update = true
 			}
-			if aStaticBombNum > bStaticBombNum && (byte)(bEmptyNum) == aStaticBombNum-bStaticBombNum {
-				for _, v := range bEmptyIndex {
-					dat[v] = SWEEPUNIT
-					update = true
-				}
+		}
+		if aStaticBombNum > bStaticBombNum && (byte)(bEmptyNum) == aStaticBombNum-bStaticBombNum {
+			for _, v := range bEmptyIndex {
+				dat[v] = SWEEPUNIT
+				update = true
 			}
-		} else {
-			if len(aEmptyIndex) == 0 {
-				for _, v := range bEmptyIndex {
-					dat[v] = SAFEUNIT
-					update = true
-				}
+		}
+		if aStaticBombNum == bStaticBombNum && len(aEmptyIndex) == 0 {
+			for _, v := range bEmptyIndex {
+				dat[v] = SAFEUNIT
+				update = true
 			}
-			if len(bEmptyIndex) == 0 {
-				for _, v := range aEmptyIndex {
-					dat[v] = SAFEUNIT
-					update = true
-				}
+		}
+		if aStaticBombNum == bStaticBombNum && len(bEmptyIndex) == 0 {
+			for _, v := range aEmptyIndex {
+				dat[v] = SAFEUNIT
+				update = true
 			}
 		}
 	} else {
