@@ -224,13 +224,13 @@ func sweeperCalBesideUnit(dat []byte, a int, b int) bool {
 			}
 		}
 	} else {
-		if (byte)(aEmptyNum) <= dat[a]-dat[b]+bStaticBomnNum-aStaticBombNum {
+		if (byte)(aEmptyNum) <= dat[a]-dat[b]+bStaticBomnNum-aStaticBombNum && bStaticBomnNum > aStaticBombNum {
 			for _, v := range aEmptyIndex {
 				dat[v] = SWEEPUNIT
 				update = true
 			}
 		}
-		if (byte)(bEmptyNum) >= dat[a]-dat[b]+bStaticBomnNum-aStaticBombNum {
+		if (byte)(bEmptyNum) <= dat[a]-dat[b]+bStaticBomnNum-aStaticBombNum && bStaticBomnNum > aStaticBombNum {
 			for _, v := range bEmptyIndex {
 				dat[v] = SAFEUNIT
 				update = true
@@ -443,7 +443,7 @@ func SweeperCal(sw SweeperMap, dat []byte) []byte {
 			if len(sw.valueRoot) == 0 {
 				index := getRandSweep()
 				dat[index] = SAFEUNIT
-			} else {
+	:		} else {
 				for _, v := range sw.zeroRoot {
 					pro = getBombProbability(dat, v, 99-bombCnt, len(sw.zeroRoot))
 					if pro < proMin {
