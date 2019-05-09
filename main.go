@@ -39,7 +39,13 @@ func aRobotgo() {
 
 	sw := sweeper.SweeperCreateMap()
 
+	var (
+		total   int = 0
+		success int = 0
+	)
+
 	g.StartNewGame()
+	total++
 
 	for {
 
@@ -48,11 +54,14 @@ func aRobotgo() {
 		state, err := g.UpdateGridState()
 		if err != nil {
 			fmt.Println("----------------------------------------------------------------------")
-			fmt.Printf("%s, press any key to start another game:\n", err.Error())
-			var str string
-			fmt.Scanln(&str)
+			fmt.Printf("success percentage: %d%% (%d/%d)", success*100/total, success, total)
+			fmt.Printf("%s, game will restart in seconds\n", err.Error())
+			time.Sleep(4e9)
+			//fmt.Printf("%s, press any key to start another game:\n", err.Error())
+			//var str string
+			//fmt.Scanln(&str)
 			g.StartNewGame()
-			time.Sleep(1e9)
+			total++
 			continue
 		}
 		//
@@ -76,12 +85,16 @@ func aRobotgo() {
 		//
 		if Succeed(control) {
 
+			success++
 			fmt.Println("----------------------------------------------------------------------")
-			fmt.Printf("bingo, press any key to start another game:\n")
-			var str string
-			fmt.Scanln(&str)
+			fmt.Printf("success percentage: %d%% (%d/%d)\n", success*100/total, success, total)
+			fmt.Printf("bingo, game will restart in seconds:\n")
+			time.Sleep(4e9)
+			//fmt.Printf("bingo, press any key to start another game:\n")
+			//var str string
+			//fmt.Scanln(&str)
 			g.StartNewGame()
-			time.Sleep(1e9)
+			total++
 			continue
 		}
 
