@@ -26,6 +26,8 @@ func aRobotgo() {
 
 	sw := sweeper.SweeperCreateMap()
 
+	g.StartNewGame()
+
 	for {
 		//g.UpdateGridState()
 		fmt.Println("begin calc")
