@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"./Sweeper"
+	"./mineUI"
 )
 
 //"github.com/go-vgo/robotgo"
@@ -54,7 +55,7 @@ func aRobotgo() {
 		//mouse
 		ox, oy := g.OrgPos()
 		// grid := *[30][16]byte
-		MoveAndClick(ox, oy, control)
+		mineUI.MoveAndClick(ox, oy, control)
 
 		//time.Sleep(3e9)
 
