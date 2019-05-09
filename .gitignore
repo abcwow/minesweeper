@@ -23,7 +23,6 @@ flycheck_*.*
 flymake_*.*
 temp.go
 temp/
-test.png
 *.swp
 *.swo
 tools/test.sh
