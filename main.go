@@ -19,6 +19,19 @@ import (
 )
 
 //"github.com/go-vgo/robotgo"
+func Succeed(dat []byte) bool {
+
+	fmt.Println("!!!!!!check end!!!!!!: ", dat)
+	n := len(dat)
+
+	for i := 0; i < n; i++ {
+		if dat[i] == 0 {
+			return false
+		}
+	}
+
+	return true
+}
 
 func aRobotgo() {
 
@@ -29,6 +42,7 @@ func aRobotgo() {
 	g.StartNewGame()
 
 	for {
+
 		//g.UpdateGridState()
 		fmt.Println("begin calc")
 		state, err := g.UpdateGridState()
@@ -59,7 +73,17 @@ func aRobotgo() {
 		// grid := *[30][16]byte
 		mineUI.MoveAndClick(ox, oy, control)
 
-		//time.Sleep(3e9)
+		//
+		if Succeed(control) {
+
+			fmt.Println("----------------------------------------------------------------------")
+			fmt.Printf("bingo, press any key to start another game:\n")
+			var str string
+			fmt.Scanln(&str)
+			g.StartNewGame()
+			time.Sleep(1e9)
+			continue
+		}
 
 	}
 
