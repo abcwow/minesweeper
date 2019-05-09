@@ -222,6 +222,19 @@ func sweeperCalBesideUnit(dat []byte, a int, b int) bool {
 					update = true
 				}
 			}
+		} else {
+			if len(aEmptyIndex) == 0 {
+				for _, v := range bEmptyIndex {
+					dat[v] = SAFEUNIT
+					update = true
+				}
+			}
+			if len(bEmptyIndex) == 0 {
+				for _, v := range aEmptyIndex {
+					dat[v] = SAFEUNIT
+					update = true
+				}
+			}
 		}
 	} else {
 		if (byte)(aEmptyNum) <= dat[a]-dat[b]+bStaticBomnNum-aStaticBombNum {
